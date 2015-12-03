@@ -107,9 +107,9 @@ var GameScreen = AbstractScreen.extend({
 
         this.dilma = new Dilma("img/assets/gameplay/dilma.png");
         this.entityLayer.addChild(this.dilma);
-        this.dilma.minPos = this.dilma.getContent().width * 0.3;
-        this.dilma.getContent().position.x = this.dilma.minPos;
-        this.dilma.maxPos = this.dilma.getContent().width * 0.4;
+        this.dilma.minPos = windowWidth / 2 - windowWidth/2.5;
+        this.dilma.maxPos =  windowWidth / 2 - windowWidth/3;
+        this.dilma.getContent().position.x = this.dilma.maxPos + Math.random((this.dilma.maxPos - this.dilma.minPos) / 2);
 
         ///CUNHAAA
 
@@ -141,10 +141,9 @@ var GameScreen = AbstractScreen.extend({
 
         this.cunha = new Dilma("img/assets/gameplay/cunha.png");
         this.entityLayer.addChild(this.cunha);
-        this.cunha.getContent().position.x = windowWidth - this.cunha.getContent().width;
-        this.cunha.maxPos = windowWidth / 2 + this.cunha.getContent().width * 0.2;
-        this.cunha.minPos = windowWidth / 2 + this.cunha.getContent().width * 1.5;
-
+        this.cunha.maxPos = windowWidth / 2 + windowWidth / 3;
+        this.cunha.minPos = windowWidth / 2 + windowWidth / 2.5;
+        this.cunha.getContent().position.x = this.cunha.maxPos + Math.random((this.cunha.maxPos - this.cunha.minPos) / 2);
 
 
 
@@ -188,7 +187,7 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.gameContainer.addChild(this.layerManager.getContent());
-        
+
         
         this.createModal();
         this.hideModal();
