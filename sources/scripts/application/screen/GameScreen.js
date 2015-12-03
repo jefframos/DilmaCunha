@@ -13,7 +13,7 @@ var GameScreen = AbstractScreen.extend({
         this.sides = 7;
         this.gameContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainer);
-        var assetsToLoader = ["img/assets/gameplay/dilma.png","img/assets/gameplay/cunha.png"];
+        var assetsToLoader = ["img/assets/gameplay/dilma.png","img/assets/gameplay/cunha.png","img/assets/modal_buttons/timer.png"];
         if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
             this.initLoad();
@@ -62,7 +62,7 @@ var GameScreen = AbstractScreen.extend({
         this._super();
         this.layerManager = new LayerManager();
         this.entityLayer = new Layer("Entity");
-        this.layerManager.addLayer(this.entityLayer);
+        
 
 
 
@@ -70,7 +70,7 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-         var self = this;
+        var self = this;
 
 
         function touching(target){
@@ -81,13 +81,23 @@ var GameScreen = AbstractScreen.extend({
 
         ///DILMAA
 
+
+        this.dilmaBg = new SimpleSprite("img/assets/background_gameplay/dilma.png");
+        this.dilmaBg.getContent().width = windowWidth/2;
+        this.dilmaBg.getContent().height = windowHeight;
+        this.gameContainer.addChild(this.dilmaBg.getContent());
+
+
         this.hitTouchDilma = new PIXI.Graphics();
         this.hitTouchDilma.interactive = true;
         this.hitTouchDilma.beginFill(0xFF0000);
         this.hitTouchDilma.drawRect(0,0,windowWidth/2, windowHeight);
-        this.addChild(this.hitTouchDilma);
+        this.gameContainer.addChild(this.hitTouchDilma);
         this.hitTouchDilma.alpha = 0.1;
         this.hitTouchDilma.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
+
+        
+        
 
         this.hitTouchDilma.mousemove = this.hitTouchDilma.touchmove = function(touchData){
 
@@ -113,11 +123,18 @@ var GameScreen = AbstractScreen.extend({
 
         ///CUNHAAA
 
+
+        this.cunhaBg = new SimpleSprite("img/assets/background_gameplay/cunha.png");
+        this.gameContainer.addChild(this.cunhaBg.getContent());
+        this.cunhaBg.getContent().width = windowWidth/2;
+        this.cunhaBg.getContent().height = windowHeight;
+        this.cunhaBg.getContent().position.x = windowWidth/2;
+
         this.hitTouchCunha = new PIXI.Graphics();
         this.hitTouchCunha.interactive = true;
         this.hitTouchCunha.beginFill(0x0000FF);
         this.hitTouchCunha.drawRect(windowWidth/2,0,windowWidth/2, windowHeight);
-        this.addChild(this.hitTouchCunha);
+        this.gameContainer.addChild(this.hitTouchCunha);
         this.hitTouchCunha.alpha = 0.1;
         this.hitTouchCunha.hitArea = new PIXI.Rectangle(windowWidth/2, 0, windowWidth, windowHeight);
 
@@ -138,6 +155,11 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+        this.raio = new SimpleSprite("img/assets/background_gameplay/raio.png");
+        this.raio.getContent().height = windowHeight;
+        this.raio.getContent().anchor.x = 0.5;
+        this.raio.getContent().position.x = windowWidth/2;
+        this.gameContainer.addChild(this.raio.getContent());
 
         this.cunha = new Dilma("img/assets/gameplay/cunha.png");
         this.entityLayer.addChild(this.cunha);
@@ -148,27 +170,9 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+        ////////BARS
 
-        ////////
-        this.currentTime = 0;
-
-
-        this.timerLabel = new PIXI.Text("00", {font:"50px Arial", fill:"black"});
-        this.addChild(this.timerLabel);
-
-        this.interval = setInterval(function(){
-            self.currentTime++;
-
-            var nextVal = "00";
-            if(self.currentTime < 10){
-                nextVal = "0" + self.currentTime
-            }else{
-                nextVal = self.currentTime
-            }
-            self.timerLabel.setText(nextVal);
-            // console.log(self.currentTime)
-
-        },1000);
+       
 
         this.dilmaMaxLife = this.dilmaLife = 100;
         
@@ -186,6 +190,51 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+
+
+
+
+
+
+
+        /////// TIMER
+
+        this.backTimer = new SimpleSprite("img/assets/modal_buttons/timer.png");
+        scaleConverter(this.backTimer.getContent().height, this.dilmaBarView.getContent().height, 2.5, this.backTimer.getContent());
+        this.backTimer.getContent().anchor.x = 0.5;
+        this.backTimer.getContent().position.x = windowWidth/2;
+        this.gameContainer.addChild(this.backTimer.getContent());
+
+        this.currentTime = 0;
+
+
+        this.timerLabel = new PIXI.Text("00", {font:"40px barrocoregular", fill:"black"});
+        this.timerLabel.position.y =this.dilmaBarView.getContent().position.y + this.dilmaBarView.getContent().height / 2 - this.timerLabel.height / 2;
+        this.addChild(this.timerLabel);
+
+        this.interval = setInterval(function(){
+            self.currentTime++;
+
+            var nextVal = "00";
+            if(self.currentTime < 10){
+                nextVal = "0" + self.currentTime
+            }else{
+                nextVal = self.currentTime
+            }
+            self.timerLabel.setText(nextVal);
+            // console.log(self.currentTime)
+
+        },1000);
+
+
+
+
+
+
+
+
+
+
         this.gameContainer.addChild(this.layerManager.getContent());
 
         
@@ -198,6 +247,8 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+
+        this.layerManager.addLayer(this.entityLayer);
 
 
         this.updateable = true;

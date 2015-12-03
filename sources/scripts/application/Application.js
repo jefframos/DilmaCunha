@@ -6,6 +6,8 @@ var Application = AbstractApplication.extend({
 	},
     build:function(){
         this._super();
+        this.timerLabel = new PIXI.Text("00", {font:"50px barrocoregular", fill:"black"});
+        this.stage.addChild(this.timerLabel);
         this.onAssetsLoaded();
     },
     onAssetsLoaded:function()
@@ -15,5 +17,7 @@ var Application = AbstractApplication.extend({
         this.screenManager.addScreen(this.gameScreen);
         this.screenManager.addScreen(this.homeScreen);
         this.screenManager.change('Game');
+
+        this.timerLabel.alpha = 0;
     },
 });

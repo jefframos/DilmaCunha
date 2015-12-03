@@ -6,6 +6,8 @@ var Application = AbstractApplication.extend({
 	},
     build:function(){
         this._super();
+        this.timerLabel = new PIXI.Text("00", {font:"50px barrocoregular", fill:"black"});
+        this.stage.addChild(this.timerLabel);
         this.onAssetsLoaded();
     },
     onAssetsLoaded:function()
@@ -15,7 +17,173 @@ var Application = AbstractApplication.extend({
         this.screenManager.addScreen(this.gameScreen);
         this.screenManager.addScreen(this.homeScreen);
         this.screenManager.change('Game');
+
+        this.timerLabel.alpha = 0;
     },
+});
+
+var Ball = Class.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(0x553388);
+		this.radius = 30;
+		this.graphics.drawCircle(0,0,this.radius);
+		this.entityContainer.addChild(this.graphics);
+		this.velocity = {x:0,y:0};
+		this.jumpForce = 8;
+	},
+	jump:function(){
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		this.graphics.drawCircle(0,0,30);
+		this.velocity.y = -this.jumpForce;
+	},
+	update:function(){
+		this.entityContainer.position.x += this.velocity.x;
+		this.entityContainer.position.y += this.velocity.y;
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Dilma = Entity.extend({
+	init:function(imgSrc){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imageDilma = new SimpleSprite(imgSrc);
+        this.entityContainer.addChild(this.imageDilma.getContent());
+        console.log(this.imageDilma.getContent().anchor)
+        this.imageDilma.getContent().anchor.x = 0.5;
+        scaleConverter(this.imageDilma.getContent().height, windowHeight, 0.7, this.imageDilma.getContent());
+
+        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
+        this.velocity = {x:0,y:0};
+        this.updateable = true;
+
+        // this.minPos = this.imageDilma.getContent().width * 0.2;
+        // this.maxPos = windowWidth / 2 - this.imageDilma.getContent().width * 1.5;
+        this.side = 1;
+        this.sin = Math.random();
+
+        this.standardVel = {x:3, y:2};
+        this.virtualVel = {x:0, y:0};
+
+        this.acc = 0.1;
+
+
+	},
+	update:function(){
+
+		this.velocity.x = this.virtualVel.x * this.side;
+
+		tempSin = Math.sin(this.sin += 0.2);
+		// console.log(tempSin)
+		this.velocity.y = this.virtualVel.y *tempSin;
+
+		accelerating = true;
+
+		if(this.getPosition().x > this.maxPos && this.side > 0){
+			this.virtualVel.x -= this.acc;
+
+			accelerating = false;
+
+			// this.side = -1;
+		}else if(this.getPosition().x < this.minPos && this.side < 0){
+			this.virtualVel.x -= this.acc;
+
+			accelerating = false;
+			// this.side = 1;
+		}
+		if(accelerating && this.virtualVel.x < this.standardVel.x){
+			this.virtualVel.x +=  this.acc;
+		}
+
+		if(this.virtualVel.y < this.standardVel.y){
+			this.virtualVel.y +=  this.acc;
+		}
+
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Item = Entity.extend({
+	init:function(imgSrc){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imageDilma = new SimpleSprite(imgSrc);
+        this.entityContainer.addChild(this.imageDilma.getContent());
+
+        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
+        this.standardVelocity = {x:windowWidth * 0.3,y:0};
+        this.velocity = {x:0,y:0};
+        this.updateable = true;
+
+        this.side = 1;
+        this.sin = 0;
+
+        //this.gravity
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Pudim = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(0x553388);
+		this.radius = 30;
+		this.graphics.drawCircle(0,0,this.radius);
+		this.entityContainer.addChild(this.graphics);
+		this.velocity = {x:0,y:0};
+		this.jumpForce = 8;
+		this.updateable = true;
+	},
+	jump:function(){
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		this.graphics.drawCircle(0,0,30);
+		this.velocity.y = -this.jumpForce;
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Wall = Class.extend({
+	init:function(width, height, borderAngle){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		var diagonal = Math.sin(borderAngle / 180 * Math.PI)*height;
+		this.graphics.moveTo(- diagonal,height);
+		this.graphics.lineTo(width + diagonal, height);
+		this.graphics.lineTo(width,0)
+		this.graphics.lineTo(0,0)
+
+		this.entityContainer.addChild(this.graphics);
+		this.graphics.x = - (this.graphics.width - diagonal * 2) / 2;
+		this.graphics.y = - this.graphics.height/2;
+
+		this.marker = new PIXI.Graphics();
+		this.marker.beginFill(0xFF0000);
+		this.marker.drawCircle(0,0,1);
+		this.entityContainer.addChild(this.marker);
+	},
+	update:function(){
+		//this.entityContainer.rotation += 0.01;
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
 });
 
 /*jshint undef:false */
@@ -947,170 +1115,6 @@ var AppModel = Class.extend({
         
     }
 });
-var Ball = Class.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(0x553388);
-		this.radius = 30;
-		this.graphics.drawCircle(0,0,this.radius);
-		this.entityContainer.addChild(this.graphics);
-		this.velocity = {x:0,y:0};
-		this.jumpForce = 8;
-	},
-	jump:function(){
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		this.graphics.drawCircle(0,0,30);
-		this.velocity.y = -this.jumpForce;
-	},
-	update:function(){
-		this.entityContainer.position.x += this.velocity.x;
-		this.entityContainer.position.y += this.velocity.y;
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Dilma = Entity.extend({
-	init:function(imgSrc){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imageDilma = new SimpleSprite(imgSrc);
-        this.entityContainer.addChild(this.imageDilma.getContent());
-        console.log(this.imageDilma.getContent().anchor)
-        this.imageDilma.getContent().anchor.x = 0.5;
-        scaleConverter(this.imageDilma.getContent().height, windowHeight, 0.7, this.imageDilma.getContent());
-
-        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
-        this.velocity = {x:0,y:0};
-        this.updateable = true;
-
-        // this.minPos = this.imageDilma.getContent().width * 0.2;
-        // this.maxPos = windowWidth / 2 - this.imageDilma.getContent().width * 1.5;
-        this.side = 1;
-        this.sin = Math.random();
-
-        this.standardVel = {x:3, y:2};
-        this.virtualVel = {x:0, y:0};
-
-        this.acc = 0.1;
-
-
-	},
-	update:function(){
-
-		this.velocity.x = this.virtualVel.x * this.side;
-
-		tempSin = Math.sin(this.sin += 0.2);
-		// console.log(tempSin)
-		this.velocity.y = this.virtualVel.y *tempSin;
-
-		accelerating = true;
-
-		if(this.getPosition().x > this.maxPos && this.side > 0){
-			this.virtualVel.x -= this.acc;
-
-			accelerating = false;
-
-			// this.side = -1;
-		}else if(this.getPosition().x < this.minPos && this.side < 0){
-			this.virtualVel.x -= this.acc;
-
-			accelerating = false;
-			// this.side = 1;
-		}
-		if(accelerating && this.virtualVel.x < this.standardVel.x){
-			this.virtualVel.x +=  this.acc;
-		}
-
-		if(this.virtualVel.y < this.standardVel.y){
-			this.virtualVel.y +=  this.acc;
-		}
-
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Item = Entity.extend({
-	init:function(imgSrc){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imageDilma = new SimpleSprite(imgSrc);
-        this.entityContainer.addChild(this.imageDilma.getContent());
-
-        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
-        this.standardVelocity = {x:windowWidth * 0.3,y:0};
-        this.velocity = {x:0,y:0};
-        this.updateable = true;
-
-        this.side = 1;
-        this.sin = 0;
-
-        //this.gravity
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Pudim = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(0x553388);
-		this.radius = 30;
-		this.graphics.drawCircle(0,0,this.radius);
-		this.entityContainer.addChild(this.graphics);
-		this.velocity = {x:0,y:0};
-		this.jumpForce = 8;
-		this.updateable = true;
-	},
-	jump:function(){
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		this.graphics.drawCircle(0,0,30);
-		this.velocity.y = -this.jumpForce;
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Wall = Class.extend({
-	init:function(width, height, borderAngle){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		var diagonal = Math.sin(borderAngle / 180 * Math.PI)*height;
-		this.graphics.moveTo(- diagonal,height);
-		this.graphics.lineTo(width + diagonal, height);
-		this.graphics.lineTo(width,0)
-		this.graphics.lineTo(0,0)
-
-		this.entityContainer.addChild(this.graphics);
-		this.graphics.x = - (this.graphics.width - diagonal * 2) / 2;
-		this.graphics.y = - this.graphics.height/2;
-
-		this.marker = new PIXI.Graphics();
-		this.marker.beginFill(0xFF0000);
-		this.marker.drawCircle(0,0,1);
-		this.entityContainer.addChild(this.marker);
-	},
-	update:function(){
-		//this.entityContainer.rotation += 0.01;
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
 /*jshint undef:false */
 var RainParticle = Class.extend({
 	init:function(fallSpeed,windSpeed,hArea,vArea,dir){
@@ -1196,7 +1200,7 @@ var GameScreen = AbstractScreen.extend({
         this.sides = 7;
         this.gameContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainer);
-        var assetsToLoader = ["img/assets/gameplay/dilma.png","img/assets/gameplay/cunha.png"];
+        var assetsToLoader = ["img/assets/gameplay/dilma.png","img/assets/gameplay/cunha.png","img/assets/modal_buttons/timer.png"];
         if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
             this.initLoad();
@@ -1245,7 +1249,7 @@ var GameScreen = AbstractScreen.extend({
         this._super();
         this.layerManager = new LayerManager();
         this.entityLayer = new Layer("Entity");
-        this.layerManager.addLayer(this.entityLayer);
+        
 
 
 
@@ -1253,7 +1257,7 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-         var self = this;
+        var self = this;
 
 
         function touching(target){
@@ -1264,13 +1268,23 @@ var GameScreen = AbstractScreen.extend({
 
         ///DILMAA
 
+
+        this.dilmaBg = new SimpleSprite("img/assets/background_gameplay/dilma.png");
+        this.dilmaBg.getContent().width = windowWidth/2;
+        this.dilmaBg.getContent().height = windowHeight;
+        this.gameContainer.addChild(this.dilmaBg.getContent());
+
+
         this.hitTouchDilma = new PIXI.Graphics();
         this.hitTouchDilma.interactive = true;
         this.hitTouchDilma.beginFill(0xFF0000);
         this.hitTouchDilma.drawRect(0,0,windowWidth/2, windowHeight);
-        this.addChild(this.hitTouchDilma);
+        this.gameContainer.addChild(this.hitTouchDilma);
         this.hitTouchDilma.alpha = 0.1;
         this.hitTouchDilma.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
+
+        
+        
 
         this.hitTouchDilma.mousemove = this.hitTouchDilma.touchmove = function(touchData){
 
@@ -1296,11 +1310,18 @@ var GameScreen = AbstractScreen.extend({
 
         ///CUNHAAA
 
+
+        this.cunhaBg = new SimpleSprite("img/assets/background_gameplay/cunha.png");
+        this.gameContainer.addChild(this.cunhaBg.getContent());
+        this.cunhaBg.getContent().width = windowWidth/2;
+        this.cunhaBg.getContent().height = windowHeight;
+        this.cunhaBg.getContent().position.x = windowWidth/2;
+
         this.hitTouchCunha = new PIXI.Graphics();
         this.hitTouchCunha.interactive = true;
         this.hitTouchCunha.beginFill(0x0000FF);
         this.hitTouchCunha.drawRect(windowWidth/2,0,windowWidth/2, windowHeight);
-        this.addChild(this.hitTouchCunha);
+        this.gameContainer.addChild(this.hitTouchCunha);
         this.hitTouchCunha.alpha = 0.1;
         this.hitTouchCunha.hitArea = new PIXI.Rectangle(windowWidth/2, 0, windowWidth, windowHeight);
 
@@ -1321,6 +1342,11 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+        this.raio = new SimpleSprite("img/assets/background_gameplay/raio.png");
+        this.raio.getContent().height = windowHeight;
+        this.raio.getContent().anchor.x = 0.5;
+        this.raio.getContent().position.x = windowWidth/2;
+        this.gameContainer.addChild(this.raio.getContent());
 
         this.cunha = new Dilma("img/assets/gameplay/cunha.png");
         this.entityLayer.addChild(this.cunha);
@@ -1331,27 +1357,9 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+        ////////BARS
 
-        ////////
-        this.currentTime = 0;
-
-
-        this.timerLabel = new PIXI.Text("00", {font:"50px Arial", fill:"black"});
-        this.addChild(this.timerLabel);
-
-        this.interval = setInterval(function(){
-            self.currentTime++;
-
-            var nextVal = "00";
-            if(self.currentTime < 10){
-                nextVal = "0" + self.currentTime
-            }else{
-                nextVal = self.currentTime
-            }
-            self.timerLabel.setText(nextVal);
-            // console.log(self.currentTime)
-
-        },1000);
+       
 
         this.dilmaMaxLife = this.dilmaLife = 100;
         
@@ -1369,6 +1377,51 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+
+
+
+
+
+
+
+        /////// TIMER
+
+        this.backTimer = new SimpleSprite("img/assets/modal_buttons/timer.png");
+        scaleConverter(this.backTimer.getContent().height, this.dilmaBarView.getContent().height, 2.5, this.backTimer.getContent());
+        this.backTimer.getContent().anchor.x = 0.5;
+        this.backTimer.getContent().position.x = windowWidth/2;
+        this.gameContainer.addChild(this.backTimer.getContent());
+
+        this.currentTime = 0;
+
+
+        this.timerLabel = new PIXI.Text("00", {font:"40px barrocoregular", fill:"black"});
+        this.timerLabel.position.y =this.dilmaBarView.getContent().position.y + this.dilmaBarView.getContent().height / 2 - this.timerLabel.height / 2;
+        this.addChild(this.timerLabel);
+
+        this.interval = setInterval(function(){
+            self.currentTime++;
+
+            var nextVal = "00";
+            if(self.currentTime < 10){
+                nextVal = "0" + self.currentTime
+            }else{
+                nextVal = self.currentTime
+            }
+            self.timerLabel.setText(nextVal);
+            // console.log(self.currentTime)
+
+        },1000);
+
+
+
+
+
+
+
+
+
+
         this.gameContainer.addChild(this.layerManager.getContent());
 
         
@@ -1381,6 +1434,8 @@ var GameScreen = AbstractScreen.extend({
 
 
 
+
+        this.layerManager.addLayer(this.entityLayer);
 
 
         this.updateable = true;
