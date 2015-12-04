@@ -1,6 +1,6 @@
 /*jshint undef:false */
 var BarView = Class.extend({
-	init: function (width, height, maxValue, currentValue){
+	init: function (width, height, maxValue, currentValue,invert){
 
 		this.maxValue = maxValue;
 		this.text = 'default';
@@ -8,17 +8,29 @@ var BarView = Class.extend({
 		this.container = new PIXI.DisplayObjectContainer();
 		this.width = width;
 		this.height = height;
+
+		gambs = 0;
+		this.backShape2 = new PIXI.Graphics();
+		// this.backShape2.lineStyle(1,0xEEEEEE);
+		this.backShape2.beginFill(0xffffff);
+		this.backShape2.drawRect(-gambs,-gambs,width+gambs * 2, height+gambs * 2);
+		this.container.addChild(this.backShape2);
+
+
 		this.backShape = new PIXI.Graphics();
 		// this.backShape.lineStyle(1,0xEEEEEE);
-		this.backShape.beginFill(0xFF0000);
+		this.backShape.beginFill(0xd53461);
 		this.backShape.drawRect(0,0,width, height);
 		this.container.addChild(this.backShape);
 
 		this.frontShape = new PIXI.Graphics();
-		this.frontShape.beginFill(0x00FF00);
+		this.frontShape.beginFill(0x3dc554);
 		this.frontShape.drawRect(0,0,width, height);
 		this.container.addChild(this.frontShape);
-
+		if(invert){
+			this.frontShape.pivot.x = width;
+			this.frontShape.position.x+=width
+		}
 		this.frontShape.scale.x = this.currentValue/this.maxValue;
 	},
 	addBackShape: function(color, size){
