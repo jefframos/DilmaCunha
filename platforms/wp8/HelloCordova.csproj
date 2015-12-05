@@ -217,4 +217,15 @@
         <PostBuildEvent>
         </PostBuildEvent>
     </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="Plugins\cordova-plugin-admobpro\AdMobPlugin.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Plugins\cordova-plugin-admobpro\AdMobOptions.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="GoogleAds">
+            <HintPath>plugins\cordova-plugin-admobpro\GoogleAds.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 </Project>
