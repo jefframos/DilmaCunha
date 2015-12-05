@@ -9,25 +9,15 @@ var HomeScreen = AbstractScreen.extend({
     },
     build: function () {
         this._super();
-        this.screenContainer = new PIXI.DisplayObjectContainer();
-        this.addChild(this.screenContainer);
+        
 
         var self = this;
 
-        this.graphics = new PIXI.Graphics();
-        this.graphics.beginFill(0x553388);
-        this.graphics.drawRoundedRect(-120,-80,240, 160, 30);
-        this.graphics.position.x = windowWidth /2;
-        this.graphics.position.y = windowHeight /2;
-        this.graphics.interactive = true;
-        this.graphics.buttonMode = true;
-        this.graphics.touchstart = this.graphics.mousedown = function(mouseData){
-            self.screenManager.change('Game');
-        };
-        this.screenContainer.addChild(this.graphics);
+        
 
-        var assetsToLoader = [];
-        if(assetsToLoader.lenght <= 0){
+        var assetsToLoader = [
+        "img/assets/home/background.png","img/assets/modal_buttons/button_2.png"];
+        if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
             this.initLoad();
         }else{
@@ -39,8 +29,35 @@ var HomeScreen = AbstractScreen.extend({
     },
     onAssetsLoaded:function()
     {
-        console.log('what3');
         this._super();
+
+
+
+        this.bg = new SimpleSprite("img/assets/home/background.png");
+        this.addChild(this.bg.getContent());
+
+
+        this.screenContainer = new PIXI.DisplayObjectContainer();
+        this.addChild(this.screenContainer);
+
+
+        this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_2.png");
+        this.screenContainer.addChild(this.imgScr.getContent());
+
+        var self = this;
+        this.imgScr.getContent().interactive = true;
+        this.imgScr.getContent().buttonMode = true;
+        this.imgScr.getContent().touchstart = this.imgScr.getContent().mousedown = function(mouseData){
+            self.screenManager.change('Game');
+        };
+
+        this.cas = new PIXI.Text("JOGAR", {font:"40px barrocoregular", fill:"white", stroke:"#ff6e36", strokeThickness: 0});
+        this.screenContainer.addChild(this.cas);
+        this.cas.position.x = this.imgScr.getContent().width / 2 - this.cas.width / 2;
+        this.cas.position.y = this.imgScr.getContent().height / 2 - this.cas.height / 2;
+        this.screenContainer.position.x = windowWidth - this.screenContainer.width * 1.2;
+        this.screenContainer.position.y = windowHeight - this.screenContainer.height * 1.3;
+
     },
     update:function()
     {

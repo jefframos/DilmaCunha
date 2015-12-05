@@ -12,7 +12,11 @@ var GameScreen = AbstractScreen.extend({
         this.polygonRadius = windowWidth * 0.25;
         this.sides = 7;
         this.gameContainer = new PIXI.DisplayObjectContainer();
+        this.topoContainer = new PIXI.DisplayObjectContainer();
+        this.topoBeforeContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainer);
+        this.addChild(this.topoContainer);
+        this.addChild(this.topoBeforeContainer);
         var assetsToLoader = [
         "img/assets/modal_buttons/button_1.png",
         "img/assets/modal_buttons/button_2.png",
@@ -46,9 +50,18 @@ var GameScreen = AbstractScreen.extend({
        
 
     },
-    showModal:function(){
+    showModal:function(force){
+        this.darkBg.interactive = true;
+        this.button1.getContent().interactive = true;
+        this.button2.getContent().interactive = true;
+        TweenLite.to(this.modalEnd, force?0:0.5, {alpha:1});
+        TweenLite.to(this.backModal, force?0:0.5, {x:windowWidth/2 - this.backModal.width/2,
+            y:windowHeight/2 - this.backModal.height/2});
     },
     hideModal:function(force){
+        this.darkBg.interactive = false;
+        this.button1.getContent().interactive = false;
+        this.button2.getContent().interactive = false;
         TweenLite.to(this.modalEnd, force?0:0.5, {alpha:0});
         TweenLite.to(this.backModal, force?0:0.5, {x:windowWidth/2 - this.backModal.width/2,
             y:windowHeight/2 - this.backModal.height/2});
@@ -65,7 +78,9 @@ var GameScreen = AbstractScreen.extend({
         this.darkBg.drawRect(0,0,windowWidth, windowHeight);
         this.modalEnd.addChild(this.darkBg);
         this.darkBg.alpha = 0.5;
-
+        this.darkBg.interactive = true;
+        this.darkBg.mousedown = this.darkBg.touchstart = function(touchData){
+        }
 
         this.backModal = new SimpleSprite("img/assets/modal_buttons/modal.png");
         this.modalEnd.addChild(this.backModal.getContent());
@@ -89,9 +104,39 @@ var GameScreen = AbstractScreen.extend({
         this.button2.setRandomText();
 
         this.addChild(this.modalEnd);
+
+        this.button1.getContent().interactive = this.button2.getContent().interactive = true;
+        var self = this;
+        this.button1.getContent().mousedown = this.button1.getContent().touchstart = this.button2.getContent().mousedown = this.button2.getContent().touchstart = function(touchData){
+            console.log(this);
+            self.hideModal();
+            self.reset();
+        };
+
+
     },
     onProgress:function(){
 
+    },
+    reset:function(){
+        console.log(this);
+        TweenLite.to(this.topoContainer, 0.5, {y:-this.topoContainer.height});
+        TweenLite.to(this.topoBeforeContainer, 0.8, {delay:0.3, y:0, ease:"easeOutBack"});
+
+        this.dilmaMaxLife = this.dilmaLife = 100;        
+        this.cunhaMaxLife = this.cunhaLife = 100;
+        this.cunha.currentHead(3);
+        this.dilma.currentHead(3);
+
+        this.dilmaBarView.updateBar(this.dilmaLife,this.dilmaMaxLife)
+        this.cunhaBarView.updateBar(this.cunhaLife,this.cunhaMaxLife)
+
+        for (var i = this.entityLayer.childs.length - 1; i >= 0; i--) {
+            if(this.entityLayer.childs[i].type && this.entityLayer.childs[i].type == "particle"){
+                this.entityLayer.childs[i].kill = true;
+                this.entityLayer.childs[i].getContent().visible = false;
+            }
+        };
     },
     onAssetsLoaded:function()
     {
@@ -139,6 +184,11 @@ var GameScreen = AbstractScreen.extend({
 
         };
         this.hitTouchDilma.mousedown = this.hitTouchDilma.touchstart = function(touchData){
+
+            if(!self.updateable){
+                self.start();
+                return
+            }
             console.log("dilma")
 
             touching(self.hitTouchDilma);
@@ -150,7 +200,7 @@ var GameScreen = AbstractScreen.extend({
 
 
             if(self.dilmaLife <= 0){
-                console.log("PERDEU DILMA")
+                self.perdeu(1);
             }
         };
         this.hitTouchDilma.mouseup = this.hitTouchDilma.touchend = function(touchData){
@@ -187,16 +237,20 @@ var GameScreen = AbstractScreen.extend({
 
         };
         this.hitTouchCunha.mousedown = this.hitTouchCunha.touchstart = function(touchData){
+            if(!self.updateable){
+                self.start();
+                return
+            }
             console.log("cunha")
             touching(self.hitTouchCunha);
-            self.cunhaLife --;
+            self.cunhaLife --//=50;
             self.cunha.hurt();
 
             self.xinga(2);
 
 
             if(self.cunhaLife <= 0){
-                console.log("PERDEU CUNHA")
+                self.perdeu(2);
             }
         };
         this.hitTouchCunha.mouseup = this.hitTouchCunha.touchend = function(touchData){
@@ -235,13 +289,13 @@ var GameScreen = AbstractScreen.extend({
         this.dilmaBarView = new BarView(windowWidth/2 * 0.8,windowHeight*0.05,this.dilmaMaxLife,this.dilmaLife,true);
         this.dilmaBarView.getContent().position.x = windowWidth/2 * 0.05;
         this.dilmaBarView.getContent().position.y = windowHeight*0.05 * 0.5;
-        this.addChild(this.dilmaBarView)
+        this.topoContainer.addChild(this.dilmaBarView.getContent())
 
         this.cunhaBarView = new BarView(windowWidth/2 * 0.8,windowHeight*0.05,this.cunhaMaxLife,this.cunhaLife);
         this.cunhaBarView.getContent().position.x = windowWidth/2 * 0.15 + windowWidth/2;
         this.cunhaBarView.getContent().position.y = windowHeight*0.05 * 0.5;
 
-        this.addChild(this.cunhaBarView)
+        this.topoContainer.addChild(this.cunhaBarView.getContent())
 
 
 
@@ -258,7 +312,7 @@ var GameScreen = AbstractScreen.extend({
         scaleConverter(this.backTimer.getContent().height, this.dilmaBarView.getContent().height, 2.5, this.backTimer.getContent());
         this.backTimer.getContent().anchor.x = 0.5;
         this.backTimer.getContent().position.x = windowWidth/2;
-        this.gameContainer.addChild(this.backTimer.getContent());
+        this.topoContainer.addChild(this.backTimer.getContent());
 
         this.currentTime = 0;
 
@@ -266,11 +320,77 @@ var GameScreen = AbstractScreen.extend({
         this.timerLabel = new PIXI.Text("00", {font:"40px barrocoregular", fill:"white", stroke:"#dbb496", strokeThickness: 10});
         scaleConverter(this.timerLabel.height, this.dilmaBarView.getContent().height, 1.5, this.timerLabel);
         this.timerLabel.position.y = this.dilmaBarView.getContent().position.y + this.dilmaBarView.getContent().height / 2 - this.timerLabel.height / 2;
-        this.addChild(this.timerLabel);
+        this.topoContainer.addChild(this.timerLabel);
+        this.timerLabel.position.x = windowWidth/2 - this.timerLabel.width /2;
         // this.timerLabel.resolution = 2;
         
         
 
+        
+
+
+
+
+
+
+        this.topoContainer.position.y = -this.topoContainer.height;
+        this.gameContainer.addChild(this.layerManager.getContent());
+
+        
+        this.createModal();
+        this.hideModal(true);
+        
+
+
+
+
+
+        this.cas = new PIXI.Text("CASSAÇÃO?", {font:"40px barrocoregular", fill:"white", stroke:"#ff6e36", strokeThickness: 8});
+        this.topoBeforeContainer.addChild(this.cas);
+        scaleConverter(this.cas.height, windowHeight, 0.12, this.cas);
+        this.cas.position.x = windowWidth / 2 + windowWidth / 4 - this.cas.width / 2;
+        this.cas.position.y = windowHeight * 0.05;
+
+        
+        this.imp = new PIXI.Text("IMPEACHMENT?", {font:"40px barrocoregular", fill:"white", stroke:"#7481b1", strokeThickness: 8});
+        this.topoBeforeContainer.addChild(this.imp);
+        scaleConverter(this.imp.height, windowHeight, 0.12, this.imp);
+        this.imp.position.x =  windowWidth / 4 - this.imp.width / 2;
+        this.imp.position.y = windowHeight * 0.05;
+
+
+
+
+        this.layerManager.addLayer(this.entityLayer);
+
+
+        this.updateable = false;
+
+
+        this.dilmaPerolas = ["Vento!", "Estocar!", "Terra Curva", "Estradas de água", "Submarinos", "Figura oculta"]
+        this.cunhaPerolas = ["Suiça", "Dinheiro!", "Contas no exterior?", "Ética", "Shopping", "Conhecidência"]
+
+
+
+
+        this.topoBeforeContainer.position.y = -this.topoBeforeContainer.height * 2;
+        this.reset();
+
+        TweenLite.from(this.getContent(), 0.3, {alpha:0});
+        // this.start();
+    },
+    start:function(){
+        var self = this;
+        TweenLite.to(this.topoContainer, 0.5, {y:0, delay:0.3, ease:"easeOutBack", onComplete:function(){
+            self.updateable = true;
+        }});
+        TweenLite.to(this.topoBeforeContainer, 0.3, {y:-this.topoBeforeContainer.height * 2});
+
+
+        clearInterval(this.interval);
+        this.currentTime = 0;
+        this.timerLabel.setText("00");
+        this.timerLabel.position.x = windowWidth/2 - this.timerLabel.width /2;
         this.interval = setInterval(function(){
             self.currentTime++;
 
@@ -280,43 +400,37 @@ var GameScreen = AbstractScreen.extend({
             }else{
                 nextVal = self.currentTime
             }
+            if(self.currentTime >= 99){
+                self.perdeu(3);
+            }
             self.timerLabel.setText(nextVal);
             // console.log(self.currentTime)
 
         },1000);
 
 
+        
+
+    },
+    perdeu:function(id){
+        if(id == 2)
+        {
+            this.cunha.currentHead(0);
+        }else if(id == 1){
+            this.dilma.currentHead(0);
+        }else{
+            this.cunha.currentHead(0);
+            this.dilma.currentHead(0);            
+        }
+        this.updateable = false;
+        this.showModal();
         clearInterval(this.interval);
-
-
-
-
-
-
-
-        this.gameContainer.addChild(this.layerManager.getContent());
-
-        
-        this.createModal();
-        this.hideModal();
-        
-
-
-
-
-
-
-
-        this.layerManager.addLayer(this.entityLayer);
-
-
-        this.updateable = true;
-
-
-        this.dilmaPerolas = ["Vento!", "Estocar!", "Terra Curva", "Estradas de água", "Submarinos", "Figura oculta"]
-        this.cunhaPerolas = ["Suiça", "Dinheiro!", "Contas no exterior?", "Ética", "Shopping", "Conhecidência"]
     },
     xinga:function(id){
+
+        this.dilmaBarView.updateBar(this.dilmaLife,this.dilmaMaxLife)
+        this.cunhaBarView.updateBar(this.cunhaLife,this.cunhaMaxLife)
+
         if(this.accumParticleXinga > 0){
             return
         }
@@ -334,7 +448,7 @@ var GameScreen = AbstractScreen.extend({
         var tempLabel = new PIXI.Text(tempArray[Math.floor(Math.random()*tempArray.length)], {font:"40px barrocoregular", fill:"white", stroke:tempStroke, strokeThickness: 8});
         // scaleConverter(tempLabel.height, windowHeight, 0.2, tempLabel);
         var rot = Math.random() * 0.004;
-        var errou = new Particles({x: 0, y:0}, 80, tempLabel,rot);
+        var errou = new Particles({x: 0, y:-Math.random() *2 - 2}, 80, tempLabel,rot);
         errou.initScale = scaleConverter(tempLabel.height, windowHeight, 0.1);
         // errou.maxScale = this.player.getContent().scale.x;
         errou.build();

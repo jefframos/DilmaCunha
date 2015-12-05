@@ -11,7 +11,6 @@ var Button1 = Entity.extend({
 		this.entityContainer.addChild(this.label);
 	},
 	setRandomText:function(){
-		console.log(this);
 		this.entityContainer.removeChild(this.label);
 
 		this.label = new PIXI.Text("asdaasfas", {font:"40px barrocoregular", fill:"white"});

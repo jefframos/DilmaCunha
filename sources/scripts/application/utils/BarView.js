@@ -75,7 +75,8 @@ var BarView = Class.extend({
 		if(this.currentValue !== currentValue || this.maxValue !== maxValue && currentValue >= 0){
 			this.currentValue = currentValue;
 			this.maxValue = maxValue;
-			this.frontShape.scale.x = this.currentValue/this.maxValue;
+			TweenLite.to(this.frontShape.scale, 0.2, {x:this.currentValue/this.maxValue})
+			// this.frontShape.scale.x = this.currentValue/this.maxValue;
 			if(this.frontShape.scale.x < 0){
 				this.frontShape.scale.x = 0;
 			}

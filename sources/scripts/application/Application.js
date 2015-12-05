@@ -2,7 +2,7 @@
 var Application = AbstractApplication.extend({
 	init:function(){
         this._super(windowWidth, windowHeight);
-        this.stage.setBackgroundColor(0xffffff);
+        this.stage.setBackgroundColor(0x3dc554);
 	},
     build:function(){
         this._super();
@@ -16,7 +16,7 @@ var Application = AbstractApplication.extend({
         this.homeScreen = new HomeScreen('Home');
         this.screenManager.addScreen(this.gameScreen);
         this.screenManager.addScreen(this.homeScreen);
-        this.screenManager.change('Game');
+        this.screenManager.change('Home');
 
         this.timerLabel.alpha = 0;
     },
