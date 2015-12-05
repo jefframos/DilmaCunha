@@ -22,6 +22,263 @@ var Application = AbstractApplication.extend({
     },
 });
 
+var Ball = Class.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(0x553388);
+		this.radius = 30;
+		this.graphics.drawCircle(0,0,this.radius);
+		this.entityContainer.addChild(this.graphics);
+		this.velocity = {x:0,y:0};
+		this.jumpForce = 8;
+	},
+	jump:function(){
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		this.graphics.drawCircle(0,0,30);
+		this.velocity.y = -this.jumpForce;
+	},
+	update:function(){
+		this.entityContainer.position.x += this.velocity.x;
+		this.entityContainer.position.y += this.velocity.y;
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Button1 = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_1.png");
+        this.entityContainer.addChild(this.imgScr.getContent());
+		this.updateable = false;
+
+		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
+		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
+		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
+		this.entityContainer.addChild(this.label);
+	},
+	setRandomText:function(){
+		this.entityContainer.removeChild(this.label);
+
+		this.label = new PIXI.Text("asdaasfas", {font:"40px barrocoregular", fill:"white"});
+		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.8, this.label);
+		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
+		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.6;
+		this.entityContainer.addChild(this.label);
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Button2 = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_2.png");
+        this.entityContainer.addChild(this.imgScr.getContent());
+		this.updateable = false;
+		
+		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
+		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
+		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
+		this.entityContainer.addChild(this.label);
+	},
+	setRandomText:function(){
+		console.log(this);
+		this.entityContainer.removeChild(this.label);
+
+		this.label = new PIXI.Text("asdaasfas", {font:"40px barrocoregular", fill:"white"});
+		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.8, this.label);
+		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
+		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.6;
+		this.entityContainer.addChild(this.label);
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Dilma = Entity.extend({
+	init:function(imgSrc, heads, positionHead){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imageDilma = new SimpleSprite(imgSrc);
+        this.entityContainer.addChild(this.imageDilma.getContent());
+        this.imageDilma.getContent().anchor.x = 0.5;
+
+        // this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
+        this.velocity = {x:0,y:0};
+        this.updateable = true;
+
+        // this.minPos = this.imageDilma.getContent().width * 0.2;
+        // this.maxPos = windowWidth / 2 - this.imageDilma.getContent().width * 1.5;
+        this.side = 1;
+        this.sin = Math.random();
+
+        this.standardVel = {x:3, y:2};
+        this.virtualVel = {x:0, y:0};
+
+        this.acc = 0.1;
+
+
+
+        this.heads = [];
+        for (var i = heads.length - 1; i >= 0; i--) {
+        	tempHead = new SimpleSprite(heads[i])
+        	this.heads.push(tempHead);
+        	//this.entityContainer.addChild(tempHead.getContent());
+        	tempHead.getContent().position.x = positionHead.x;
+        };
+
+        this.currentHead(3);
+
+        scaleConverter(this.getContent().height, windowHeight, 0.5, this.getContent());
+
+        this.imageDilma.getContent().position.y = positionHead.y;
+        this.getContent().position.y = windowHeight - this.getContent().height * 0.9;
+        this.normalCounter = 0;
+	},
+	hurt:function(){
+		this.currentHead((Math.floor(Math.random() * 2) + 1));
+		this.normalCounter = 50;
+	},
+	currentHead:function(id){
+		if(this.currentId == id){
+			return;
+		}
+		this.currentId = id;
+		for (var i = this.heads.length - 1; i >= 0; i--) {
+			if(this.heads[i].getContent().parent){
+				this.heads[i].getContent().parent.removeChild(this.heads[i].getContent());
+			}
+        }
+        this.entityContainer.addChild(this.heads[id].getContent());
+	},
+	update:function(){
+
+		this.normalCounter --;
+		if(this.normalCounter <= 0){
+			this.currentHead(3);
+		}
+		this.velocity.x = this.virtualVel.x * this.side;
+
+		tempSin = Math.sin(this.sin += 0.2);
+		// console.log(tempSin)
+		this.velocity.y = this.virtualVel.y *tempSin;
+
+		accelerating = true;
+
+		if(this.getPosition().x > this.maxPos && this.side > 0){
+			this.virtualVel.x -= this.acc;
+
+			accelerating = false;
+
+			// this.side = -1;
+		}else if(this.getPosition().x < this.minPos && this.side < 0){
+			this.virtualVel.x -= this.acc;
+
+			accelerating = false;
+			// this.side = 1;
+		}
+		if(accelerating && this.virtualVel.x < this.standardVel.x){
+			this.virtualVel.x +=  this.acc;
+		}
+
+		if(this.virtualVel.y < this.standardVel.y){
+			this.virtualVel.y +=  this.acc;
+		}
+
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Item = Entity.extend({
+	init:function(imgSrc){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imageDilma = new SimpleSprite(imgSrc);
+        this.entityContainer.addChild(this.imageDilma.getContent());
+
+        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
+        this.standardVelocity = {x:windowWidth * 0.3,y:0};
+        this.velocity = {x:0,y:0};
+        this.updateable = true;
+
+        this.side = 1;
+        this.sin = 0;
+
+        //this.gravity
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Pudim = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(0x553388);
+		this.radius = 30;
+		this.graphics.drawCircle(0,0,this.radius);
+		this.entityContainer.addChild(this.graphics);
+		this.velocity = {x:0,y:0};
+		this.jumpForce = 8;
+		this.updateable = true;
+	},
+	jump:function(){
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		this.graphics.drawCircle(0,0,30);
+		this.velocity.y = -this.jumpForce;
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Wall = Class.extend({
+	init:function(width, height, borderAngle){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		var diagonal = Math.sin(borderAngle / 180 * Math.PI)*height;
+		this.graphics.moveTo(- diagonal,height);
+		this.graphics.lineTo(width + diagonal, height);
+		this.graphics.lineTo(width,0)
+		this.graphics.lineTo(0,0)
+
+		this.entityContainer.addChild(this.graphics);
+		this.graphics.x = - (this.graphics.width - diagonal * 2) / 2;
+		this.graphics.y = - this.graphics.height/2;
+
+		this.marker = new PIXI.Graphics();
+		this.marker.beginFill(0xFF0000);
+		this.marker.drawCircle(0,0,1);
+		this.entityContainer.addChild(this.marker);
+	},
+	update:function(){
+		//this.entityContainer.rotation += 0.01;
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
 /*jshint undef:false */
 var Door = Entity.extend({
     init:function(side){
@@ -931,263 +1188,6 @@ var Player = SpritesheetEntity.extend({
     // },
 });
 
-var Ball = Class.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(0x553388);
-		this.radius = 30;
-		this.graphics.drawCircle(0,0,this.radius);
-		this.entityContainer.addChild(this.graphics);
-		this.velocity = {x:0,y:0};
-		this.jumpForce = 8;
-	},
-	jump:function(){
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		this.graphics.drawCircle(0,0,30);
-		this.velocity.y = -this.jumpForce;
-	},
-	update:function(){
-		this.entityContainer.position.x += this.velocity.x;
-		this.entityContainer.position.y += this.velocity.y;
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Button1 = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_1.png");
-        this.entityContainer.addChild(this.imgScr.getContent());
-		this.updateable = false;
-
-		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
-		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
-		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
-		this.entityContainer.addChild(this.label);
-	},
-	setRandomText:function(){
-		this.entityContainer.removeChild(this.label);
-
-		this.label = new PIXI.Text("asdaasfas", {font:"40px barrocoregular", fill:"white"});
-		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.8, this.label);
-		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
-		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.6;
-		this.entityContainer.addChild(this.label);
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Button2 = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_2.png");
-        this.entityContainer.addChild(this.imgScr.getContent());
-		this.updateable = false;
-		
-		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
-		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
-		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
-		this.entityContainer.addChild(this.label);
-	},
-	setRandomText:function(){
-		console.log(this);
-		this.entityContainer.removeChild(this.label);
-
-		this.label = new PIXI.Text("asdaasfas", {font:"40px barrocoregular", fill:"white"});
-		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.8, this.label);
-		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
-		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.6;
-		this.entityContainer.addChild(this.label);
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Dilma = Entity.extend({
-	init:function(imgSrc, heads, positionHead){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imageDilma = new SimpleSprite(imgSrc);
-        this.entityContainer.addChild(this.imageDilma.getContent());
-        this.imageDilma.getContent().anchor.x = 0.5;
-
-        // this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
-        this.velocity = {x:0,y:0};
-        this.updateable = true;
-
-        // this.minPos = this.imageDilma.getContent().width * 0.2;
-        // this.maxPos = windowWidth / 2 - this.imageDilma.getContent().width * 1.5;
-        this.side = 1;
-        this.sin = Math.random();
-
-        this.standardVel = {x:3, y:2};
-        this.virtualVel = {x:0, y:0};
-
-        this.acc = 0.1;
-
-
-
-        this.heads = [];
-        for (var i = heads.length - 1; i >= 0; i--) {
-        	tempHead = new SimpleSprite(heads[i])
-        	this.heads.push(tempHead);
-        	//this.entityContainer.addChild(tempHead.getContent());
-        	tempHead.getContent().position.x = positionHead.x;
-        };
-
-        this.currentHead(3);
-
-        scaleConverter(this.getContent().height, windowHeight, 0.5, this.getContent());
-
-        this.imageDilma.getContent().position.y = positionHead.y;
-        this.getContent().position.y = windowHeight - this.getContent().height * 0.9;
-        this.normalCounter = 0;
-	},
-	hurt:function(){
-		this.currentHead((Math.floor(Math.random() * 2) + 1));
-		this.normalCounter = 50;
-	},
-	currentHead:function(id){
-		if(this.currentId == id){
-			return;
-		}
-		this.currentId = id;
-		for (var i = this.heads.length - 1; i >= 0; i--) {
-			if(this.heads[i].getContent().parent){
-				this.heads[i].getContent().parent.removeChild(this.heads[i].getContent());
-			}
-        }
-        this.entityContainer.addChild(this.heads[id].getContent());
-	},
-	update:function(){
-
-		this.normalCounter --;
-		if(this.normalCounter <= 0){
-			this.currentHead(3);
-		}
-		this.velocity.x = this.virtualVel.x * this.side;
-
-		tempSin = Math.sin(this.sin += 0.2);
-		// console.log(tempSin)
-		this.velocity.y = this.virtualVel.y *tempSin;
-
-		accelerating = true;
-
-		if(this.getPosition().x > this.maxPos && this.side > 0){
-			this.virtualVel.x -= this.acc;
-
-			accelerating = false;
-
-			// this.side = -1;
-		}else if(this.getPosition().x < this.minPos && this.side < 0){
-			this.virtualVel.x -= this.acc;
-
-			accelerating = false;
-			// this.side = 1;
-		}
-		if(accelerating && this.virtualVel.x < this.standardVel.x){
-			this.virtualVel.x +=  this.acc;
-		}
-
-		if(this.virtualVel.y < this.standardVel.y){
-			this.virtualVel.y +=  this.acc;
-		}
-
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Item = Entity.extend({
-	init:function(imgSrc){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imageDilma = new SimpleSprite(imgSrc);
-        this.entityContainer.addChild(this.imageDilma.getContent());
-
-        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
-        this.standardVelocity = {x:windowWidth * 0.3,y:0};
-        this.velocity = {x:0,y:0};
-        this.updateable = true;
-
-        this.side = 1;
-        this.sin = 0;
-
-        //this.gravity
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Pudim = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(0x553388);
-		this.radius = 30;
-		this.graphics.drawCircle(0,0,this.radius);
-		this.entityContainer.addChild(this.graphics);
-		this.velocity = {x:0,y:0};
-		this.jumpForce = 8;
-		this.updateable = true;
-	},
-	jump:function(){
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		this.graphics.drawCircle(0,0,30);
-		this.velocity.y = -this.jumpForce;
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Wall = Class.extend({
-	init:function(width, height, borderAngle){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		var diagonal = Math.sin(borderAngle / 180 * Math.PI)*height;
-		this.graphics.moveTo(- diagonal,height);
-		this.graphics.lineTo(width + diagonal, height);
-		this.graphics.lineTo(width,0)
-		this.graphics.lineTo(0,0)
-
-		this.entityContainer.addChild(this.graphics);
-		this.graphics.x = - (this.graphics.width - diagonal * 2) / 2;
-		this.graphics.y = - this.graphics.height/2;
-
-		this.marker = new PIXI.Graphics();
-		this.marker.beginFill(0xFF0000);
-		this.marker.drawCircle(0,0,1);
-		this.entityContainer.addChild(this.marker);
-	},
-	update:function(){
-		//this.entityContainer.rotation += 0.01;
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
 /*jshint undef:false */
 var AppModel = Class.extend({
 	init:function(){
@@ -1795,7 +1795,8 @@ var HomeScreen = AbstractScreen.extend({
 
         this.bg = new SimpleSprite("img/assets/home/background.png");
         this.addChild(this.bg.getContent());
-
+        this.bg.getContent().width = windowWidth;
+        this.bg.getContent().height = windowHeight;
 
         this.screenContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.screenContainer);

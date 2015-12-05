@@ -35,7 +35,8 @@ var HomeScreen = AbstractScreen.extend({
 
         this.bg = new SimpleSprite("img/assets/home/background.png");
         this.addChild(this.bg.getContent());
-
+        this.bg.getContent().width = windowWidth;
+        this.bg.getContent().height = windowHeight;
 
         this.screenContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.screenContainer);
